@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, ArrowRight, ShieldCheck, Activity, Stethoscope, Mail, Lock, Undo2, Hash, ShieldAlert } from "lucide-react";
+import { auth } from "./firebase";
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  sendPasswordResetEmail,
+  updateProfile 
+} from "firebase/auth";
 
 // Move InputField outside to prevent React from re-mounting it on every render, which causes loss of focus!
 const InputField = ({ id, type, label, icon: Icon, placeholder, value, focusedInput, setFocusedInput, onChange }) => (
@@ -45,46 +52,67 @@ export default function Login({ setUser }) {
   const [focusedInput, setFocusedInput] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     
-    if (view === "forgot") {
-      if (!formData.email.trim()) {
-        setErrorMsg("Email is required for password recovery.");
+    try {
+      if (view === "forgot") {
+        if (!formData.email.trim()) {
+          setErrorMsg("Email is required for password recovery.");
+          return;
+        }
+        await sendPasswordResetEmail(auth, formData.email);
+        alert("Password reset instructions have been sent to your email!");
+        setView("login");
         return;
       }
-      alert("Password reset instructions have been sent to your email!");
-      setView("login");
-      return;
-    }
 
-    if (view === "login") {
-      if (!formData.email.trim() || !formData.password.trim()) {
-        setErrorMsg("Authentication failed: Username and Password are required.");
-        return;
+      if (view === "login") {
+        if (!formData.email.trim() || !formData.password.trim()) {
+          setErrorMsg("Authentication failed: Email and Password are required.");
+          return;
+        }
+        const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+        const user = userCredential.user;
+        setUser(user.displayName || user.email.split('@')[0]);
+      }
+
+      if (view === "register") {
+        if (!formData.name.trim() || !formData.email.trim() || !formData.password.trim()) {
+          setErrorMsg("Registration failed: All fields are required.");
+          return;
+        }
+        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+        await updateProfile(userCredential.user, {
+          displayName: formData.name
+        });
+        setUser(formData.name);
+      }
+    } catch (error) {
+      console.error("Auth Error:", error.code);
+      switch (error.code) {
+        case 'auth/invalid-credential':
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+          setErrorMsg("Invalid email or password. If you haven't created an account yet, please Register first.");
+          break;
+        case 'auth/email-already-in-use':
+          setErrorMsg("This email is already registered.");
+          break;
+        case 'auth/weak-password':
+          setErrorMsg("Password should be at least 6 characters.");
+          break;
+        case 'auth/invalid-email':
+          setErrorMsg("Please enter a valid email address.");
+          break;
+        case 'auth/operation-not-allowed':
+          setErrorMsg("Email/Password sign-in is not enabled in Firebase Console.");
+          break;
+        default:
+          setErrorMsg("Authentication failed. " + error.message);
       }
     }
-
-    if (view === "register") {
-      if (!formData.name.trim() || !formData.username.trim() || !formData.email.trim() || !formData.password.trim()) {
-        setErrorMsg("Registration failed: All fields are required.");
-        return;
-      }
-    }
-
-    // Determine the user's display name to save
-    let finalName = "";
-    if (view === "login") {
-      finalName = formData.email.split('@')[0];
-    } else if (view === "register") {
-      finalName = formData.username || formData.name;
-    }
-
-    if (!finalName) return;
-
-    localStorage.setItem("username", finalName);
-    setUser(finalName);
   };
 
   const handleInput = (e) => {

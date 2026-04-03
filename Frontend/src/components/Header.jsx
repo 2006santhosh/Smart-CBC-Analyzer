@@ -1,10 +1,16 @@
 import { Activity, Shield, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
 
 export default function Header({ user, setUser }) {
-  const handleLogout = () => {
-    localStorage.removeItem("username");
-    setUser("");
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser("");
+    } catch (error) {
+      console.error("Logout Error:", error);
+    }
   };
 
   return (

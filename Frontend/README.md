@@ -1,16 +1,59 @@
-# React + Vite
+# 🌐 TriageAI Frontend - Smart CBC Analyzer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The TriageAI Frontend is a high-performance React application built with Vite, designed to provide a premium, HIPAA-compliant user experience for medical blood report analysis.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🎨 UI & UX Highlights
 
-## React Compiler
+- **Glassmorphism**: Elegant, transparent components for a modern medical feel.
+- **Micro-Animations**: Smooth transitions powered by [Framer Motion](https://www.framer.com/motion/).
+- **Responsive Architecture**: Fully functional on mobile and desktop devices.
+- **HIPAA-Ready Interface**: Clean, secure design focusing on data privacy.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🏗️ Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### `/src` - Core Implementation
+- **`/components`**: Reusable UI elements (`Header`, `UploadSection`, `ResultCard`, `ParameterTable`).
+- **`/utils`**: High-performance clinical logic:
+  - `extractText.js`: OCR (Tesseract) and PDF parsing (pdf.js).
+  - `parseCBC.js`: High-precision Regex parsing for 20+ blood markers.
+  - `analyzeCBC.js`: Medical range comparisons and severity logic.
+  - `generateExplanation.js`: Rule-based clinical insights (local).
+- **`/assets`**: Project-specific styling and UI assets.
+
+### State & Authentication
+- **Firebase Auth**: Session management integrated via `onAuthStateChanged` hook in `App.jsx`.
+- **Local State**: Context-free React hooks for lightweight and fast UI updates.
+
+---
+
+## 🚀 Development Quick Start
+
+### 📦 Installation
+```bash
+npm install
+```
+
+### 🏁 Start Development Server
+```bash
+npm run dev
+```
+
+### 🔨 Build for Production
+```bash
+npm run build
+```
+
+---
+
+## 🛡️ Key Scripts
+- `npm run dev`: Starts the Vite development server.
+- `npm run build`: Compiles the application into the `dist` folder.
+- `npm run lint`: Perfroms code quality checks using ESLint.
+
+---
+
+**Built with 💙 by TriageAI Engineering**

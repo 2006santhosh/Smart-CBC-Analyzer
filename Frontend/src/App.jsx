@@ -14,6 +14,9 @@ import { analyzeCBC } from './utils/analyzeCBC';
 import { generateExplanation } from './utils/generateExplanation';
 import { getRecommendations } from './utils/getRecommendations';
 import Login from './Login';
+import { db, auth } from './firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -21,8 +24,15 @@ export default function App() {
   const [validationStatus, setValidationStatus] = useState('idle');
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("username");
-    setUser(savedUser || "");
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser.displayName || firebaseUser.email.split('@')[0]);
+      } else {
+        setUser("");
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
   const [validationData, setValidationData] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -113,25 +123,59 @@ export default function App() {
       setLoadingStep('Generating insights...');
       await new Promise(r => setTimeout(r, 600));
 
-      // 4. Rule-based Explanations
-      const explanation = generateExplanation(parsedData, analysis);
+      // 4. Rule-based Explanations (Fallback)
+      const localExplanation = generateExplanation(parsedData, analysis);
       
       // 5. Recommendations
       const recommendations = getRecommendations(analysis);
 
+      // 6. AI Explanation from Backend
+      setLoadingStep('Consulting AI Expert...');
+      let aiExplanation = localExplanation; 
+      try {
+        const response = await fetch('http://localhost:5000/api/explain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            parameters: analysis.parameters,
+            risk: analysis.risk,
+            abnormalCount: analysis.abnormalCount
+          })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          aiExplanation = data.explanation;
+        }
+      } catch (backendErr) {
+        console.warn('Backend unavailable, using local explanation:', backendErr);
+      }
+
       setProgress(100);
       await new Promise(r => setTimeout(r, 400)); // Let the 100% animate
 
-      // Format to match UI expectations
-      setResults({
+      const finalResults = {
         parameters: analysis.parameters,
         overallRisk: analysis.risk,
         abnormalCount: analysis.abnormalCount,
         criticalCount: analysis.criticalCount,
-        aiExplanation: explanation,
+        aiExplanation: aiExplanation,
         recommendations: recommendations,
         emergencyAlert: analysis.risk === 'HIGH'
-      });
+      };
+
+      // 7. Save to Firestore
+      try {
+        await addDoc(collection(db, 'reports'), {
+          ...finalResults,
+          userName: user,
+          fileName: file.name,
+          createdAt: serverTimestamp()
+        });
+      } catch (fsErr) {
+        console.error('Error saving to Firestore:', fsErr);
+      }
+
+      setResults(finalResults);
       setIsAnalyzing(false);
 
       // Scroll to results

@@ -171,7 +171,7 @@ export default function ResultCard({ results }) {
           <span className="absolute top-3 left-4 text-4xl text-white/5 font-serif leading-none">
             "
           </span>
-          <p className="text-text-secondary text-sm leading-relaxed pl-6">
+          <p className="text-white text-sm leading-relaxed pl-6">
             {aiExplanation}
           </p>
         </div>
