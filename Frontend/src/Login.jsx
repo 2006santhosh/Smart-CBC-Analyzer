@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, ArrowRight, ShieldCheck, Activity, Stethoscope, Mail, Lock, Undo2, Hash } from "lucide-react";
+import { User, ArrowRight, ShieldCheck, Activity, Stethoscope, Mail, Lock, Undo2, Hash, ShieldAlert } from "lucide-react";
 
 // Move InputField outside to prevent React from re-mounting it on every render, which causes loss of focus!
 const InputField = ({ id, type, label, icon: Icon, placeholder, value, focusedInput, setFocusedInput, onChange }) => (
@@ -43,25 +43,45 @@ export default function Login({ setUser }) {
   const [formData, setFormData] = useState({ name: "", username: "", email: "", password: "" });
   const [isHovered, setIsHovered] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setErrorMsg("");
     
     if (view === "forgot") {
+      if (!formData.email.trim()) {
+        setErrorMsg("Email is required for password recovery.");
+        return;
+      }
       alert("Password reset instructions have been sent to your email!");
       setView("login");
       return;
     }
 
-    // Determine the user's display name to save
-    let finalName = "Provider";
     if (view === "login") {
-      finalName = formData.email.split('@')[0] || "Provider";
-    } else if (view === "register") {
-      finalName = formData.username || formData.name || "Provider";
+      if (!formData.email.trim() || !formData.password.trim()) {
+        setErrorMsg("Authentication failed: Username and Password are required.");
+        return;
+      }
     }
 
-    if (!finalName.trim()) return;
+    if (view === "register") {
+      if (!formData.name.trim() || !formData.username.trim() || !formData.email.trim() || !formData.password.trim()) {
+        setErrorMsg("Registration failed: All fields are required.");
+        return;
+      }
+    }
+
+    // Determine the user's display name to save
+    let finalName = "";
+    if (view === "login") {
+      finalName = formData.email.split('@')[0];
+    } else if (view === "register") {
+      finalName = formData.username || formData.name;
+    }
+
+    if (!finalName) return;
 
     localStorage.setItem("username", finalName);
     setUser(finalName);
@@ -149,6 +169,21 @@ export default function Login({ setUser }) {
               {(view === "login" || view === "register") && (
                 <InputField id="password" type="password" label="Password" icon={Lock} placeholder="••••••••" value={formData.password} focusedInput={focusedInput} setFocusedInput={setFocusedInput} onChange={handleInput} />
               )}
+
+              {/* Error Message */}
+              <AnimatePresence>
+                {errorMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium flex items-center gap-2 shadow-inner"
+                  >
+                    <ShieldAlert className="w-5 h-5 flex-shrink-0" />
+                    {errorMsg}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {view === "login" && (
                 <div className="flex justify-end">
