@@ -37,7 +37,7 @@ export async function extractText(file, onProgress) {
       return { text: '', success: false, error: 'Unsupported file type' };
     }
 
-    const text = rawText.toLowerCase().replace(/\s+/g, ' ').trim();
+    const text = rawText.toLowerCase().replace(/[^\S\r\n]+/g, ' ').trim();
 
     if (!text || text.length < 5) {
       return { text: '', success: false, error: 'File is empty or unreadable' };

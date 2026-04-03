@@ -42,13 +42,22 @@ export function validateCBC(rawText) {
 
   // 1. FUZZY KEYWORD MATCHING (Flexible Regex)
   const keywordRegexes = {
-  'Hemoglobin': /hemo.?glo.?bin|hgb|haem|hemog[oa][ob]|hb\b/i,
-  'WBC': /w.?b.?c|white blood cell|leuco|leuko|woc|wbc|total woc|woc cou/i,
-  'Platelets': /plate.?lets|plt|thrombo|pres cou|puter cou|platelet|plat/i,
-  'RBC': /r.?b.?c|red blood cell|erythro|sac count|ra count|rbc/i,
-  'Hematocrit': /hema.?tocrit|hct|pcv|packed cell|packed coll|hematocrt/i,
-  'MCV': /m.?c.?v|mean corp|copal voime|corpuscular/i,
-  'CBC':  /complete blood count|cbc/i,  // bonus fallback
+  'Hemoglobin': /hemo|hgb|hb|h[ea]m[oa]p|h[ea]m[oa]l/i,
+  'WBC': /w.?b.?c|woc|leuko|white.?blood|wad.?count/i,
+  'Platelets': /plate|plt|thrombo|slee.?count/i,
+  'RBC': /r.?b.?c|erythro|red.?blood|rac.?count|roc.?count/i,
+  'Hematocrit': /hema|pcv|hct|packed.?cell|packed.?coll/i,
+  'MCV': /mcv|mean.?corp|m[ea][uv]/i,
+  'MCH': /mch|mean.?corp|wer.?wa/i,
+  'MCHC': /mchc|mean.?corp|fren/i,
+  'RDW': /rdw|distribution|wow/i,
+  'Neutrophils': /neutro|polymorph|neut/i,
+  'Lymphocytes': /lympho|lymp|soros/i,
+  'Eosinophils': /eosino|eon|eo.?napt/i,
+  'Monocytes': /mono|monoc/i,
+  'Basophils': /baso|aasop/i,
+  'ESR': /esr|erythrocyte.?sed/i,
+  'CBC':  /complete blood count|cbc/i
 };
 
   const detectedKeywords = [];
