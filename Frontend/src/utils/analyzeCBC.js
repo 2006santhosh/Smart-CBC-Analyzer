@@ -18,6 +18,9 @@ const REFERENCE_RANGES = {
   monocytes: { min: 0, max: 10, unit: '%', name: 'Monocytes' },
   basophils: { min: 0, max: 2, unit: '%', name: 'Basophils' },
   esr: { min: 0, max: 15, unit: 'mm/hr', name: 'ESR' }
+  rbc: { min: 4.5, max: 5.5, unit: 'million/µL', name: 'RBC' },
+  hematocrit: { min: 36, max: 54, unit: '%', name: 'Hematocrit' },
+  mcv: { min: 80, max: 100, unit: 'fL', name: 'MCV' }
 };
 
 export function analyzeCBC(parsedData) {

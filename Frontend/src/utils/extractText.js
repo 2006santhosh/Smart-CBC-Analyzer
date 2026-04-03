@@ -38,6 +38,7 @@ export async function extractText(file, onProgress) {
     }
 
     const text = rawText.toLowerCase().replace(/[^\S\r\n]+/g, ' ').trim();
+    const text = rawText.toLowerCase().replace(/\s+/g, ' ').trim();
 
     if (!text || text.length < 5) {
       return { text: '', success: false, error: 'File is empty or unreadable' };

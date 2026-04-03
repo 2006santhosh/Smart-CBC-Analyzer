@@ -14,6 +14,7 @@ import { analyzeCBC } from './utils/analyzeCBC';
 import { generateExplanation } from './utils/generateExplanation';
 import { getRecommendations } from './utils/getRecommendations';
 import Login from './Login';
+import { getRecommendations } from './utils/getRecommendations';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -115,6 +116,35 @@ export default function App() {
 
       // 4. Rule-based Explanations
       const explanation = generateExplanation(parsedData, analysis);
+      setLoadingStep('Generating AI insights...');
+      
+      // 4. CALL BACKEND API FOR EXPLANATION
+      let explanation = "Unable to generate AI explanation. Please consult a doctor.";
+      
+      try {
+        const response = await fetch("http://localhost:5000/api/explain", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            hemoglobin: parsedData.hemoglobin,
+            wbc: parsedData.wbc,
+            platelets: parsedData.platelets,
+            hematocrit: parsedData.hematocrit,
+            risk: analysis.risk
+          })
+        });
+
+        const data = await response.json();
+        console.log("API RESPONSE:", data);
+
+        if (data && data.explanation) {
+          explanation = data.explanation;
+        }
+      } catch (apiError) {
+        console.error("API Error:", apiError);
+      }
       
       // 5. Recommendations
       const recommendations = getRecommendations(analysis);

@@ -58,6 +58,13 @@ export function validateCBC(rawText) {
   'Basophils': /baso|aasop/i,
   'ESR': /esr|erythrocyte.?sed/i,
   'CBC':  /complete blood count|cbc/i
+  'Hemoglobin': /hemo.?glo.?bin|hgb|haem|hemog[oa][ob]|hb\b/i,
+  'WBC': /w.?b.?c|white blood cell|leuco|leuko|woc|wbc|total woc|woc cou/i,
+  'Platelets': /plate.?lets|plt|thrombo|pres cou|puter cou|platelet|plat/i,
+  'RBC': /r.?b.?c|red blood cell|erythro|sac count|ra count|rbc/i,
+  'Hematocrit': /hema.?tocrit|hct|pcv|packed cell|packed coll|hematocrt/i,
+  'MCV': /m.?c.?v|mean corp|copal voime|corpuscular/i,
+  'CBC':  /complete blood count|cbc/i,  // bonus fallback
 };
 
   const detectedKeywords = [];
