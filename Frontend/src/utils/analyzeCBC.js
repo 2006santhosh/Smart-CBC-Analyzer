@@ -6,6 +6,18 @@ const REFERENCE_RANGES = {
   hemoglobin: { min: 12.0, max: 17.5, unit: 'g/dL', name: 'Hemoglobin' },
   wbc: { min: 4000, max: 11000, unit: '/µL', name: 'WBC' },
   platelets: { min: 150000, max: 450000, unit: '/µL', name: 'Platelets' },
+  rbc: { min: 4.5, max: 5.5, unit: 'mill/cumm', name: 'RBC' },
+  hematocrit: { min: 36, max: 54, unit: '%', name: 'Hematocrit (PCV)' },
+  mcv: { min: 83, max: 101, unit: 'fL', name: 'MCV' },
+  mch: { min: 27, max: 32, unit: 'pg', name: 'MCH' },
+  mchc: { min: 32.5, max: 34.5, unit: 'g/dL', name: 'MCHC' },
+  rdw: { min: 11.6, max: 14.0, unit: '%', name: 'RDW' },
+  neutrophils: { min: 40, max: 80, unit: '%', name: 'Neutrophils' },
+  lymphocytes: { min: 20, max: 40, unit: '%', name: 'Lymphocytes' },
+  eosinophils: { min: 0, max: 6, unit: '%', name: 'Eosinophils' },
+  monocytes: { min: 0, max: 10, unit: '%', name: 'Monocytes' },
+  basophils: { min: 0, max: 2, unit: '%', name: 'Basophils' },
+  esr: { min: 0, max: 15, unit: 'mm/hr', name: 'ESR' }
   rbc: { min: 4.5, max: 5.5, unit: 'million/µL', name: 'RBC' },
   hematocrit: { min: 36, max: 54, unit: '%', name: 'Hematocrit' },
   mcv: { min: 80, max: 100, unit: 'fL', name: 'MCV' }

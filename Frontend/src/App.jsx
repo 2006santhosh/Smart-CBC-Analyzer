@@ -11,11 +11,20 @@ import { extractText } from './utils/extractText';
 import { validateCBC } from './utils/validateCBC';
 import { parseCBC } from './utils/parseCBC';
 import { analyzeCBC } from './utils/analyzeCBC';
+import { generateExplanation } from './utils/generateExplanation';
+import { getRecommendations } from './utils/getRecommendations';
+import Login from './Login';
 import { getRecommendations } from './utils/getRecommendations';
 
 export default function App() {
+  const [user, setUser] = useState(null);
   const [file, setFile] = useState(null);
   const [validationStatus, setValidationStatus] = useState('idle');
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("username");
+    setUser(savedUser || "");
+  }, []);
   const [validationData, setValidationData] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
@@ -102,6 +111,11 @@ export default function App() {
       }
 
       setProgress(80);
+      setLoadingStep('Generating insights...');
+      await new Promise(r => setTimeout(r, 600));
+
+      // 4. Rule-based Explanations
+      const explanation = generateExplanation(parsedData, analysis);
       setLoadingStep('Generating AI insights...');
       
       // 4. CALL BACKEND API FOR EXPLANATION
@@ -167,6 +181,16 @@ export default function App() {
 
   const canAnalyze = validationStatus === 'valid' && !isAnalyzing;
 
+  // Wait for React to mount and read localStorage
+  if (user === null) {
+    return <div style={{ color: "white", display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#0f172a" }}>Loading...</div>;
+  }
+
+  // Force login page if user does not exist
+  if (!user) {
+    return <Login setUser={setUser} />;
+  }
+
   return (
     <div className="min-h-screen relative">
       {/* Background Effects */}
@@ -194,7 +218,7 @@ export default function App() {
       </div>
 
       <div className="relative z-10">
-        <Header />
+        <Header user={user} setUser={setUser} />
 
         <main className="max-w-4xl mx-auto px-4 pb-16 space-y-6">
           {/* Upload + Validation */}

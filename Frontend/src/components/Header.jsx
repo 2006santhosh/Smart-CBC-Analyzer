@@ -1,7 +1,12 @@
 import { Activity, Shield, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function Header() {
+export default function Header({ user, setUser }) {
+  const handleLogout = () => {
+    localStorage.removeItem("username");
+    setUser("");
+  };
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -33,11 +38,28 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-triage-green/10 border border-triage-green/20 text-triage-green text-xs font-medium">
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-triage-green/10 border border-triage-green/20 text-triage-green text-xs font-medium">
               <span className="w-2 h-2 bg-triage-green rounded-full animate-pulse" />
               AI Engine Active
             </span>
+            
+            {user && (
+              <div className="flex items-center gap-3 pl-4 border-l border-white/10">
+                <div className="flex items-center gap-2 group">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-[0_0_10px_rgba(51,145,255,0.3)]">
+                    {user.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm font-medium text-white/90 group-hover:text-white transition-colors">{user}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-red-500/10 text-text-muted hover:text-red-400 border border-white/5 hover:border-red-500/20 transition-all text-xs font-medium"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
