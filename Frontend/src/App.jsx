@@ -7,13 +7,19 @@ import AnalyzeButton from './components/AnalyzeButton';
 import LoadingState from './components/LoadingState';
 import ResultCard from './components/ResultCard';
 import PrivacyNotice from './components/PrivacyNotice';
-import { validateCBCReport, analyzeReport } from './data/mockData';
+import { extractText } from './utils/extractText';
+import { validateCBC } from './utils/validateCBC';
+import { parseCBC } from './utils/parseCBC';
+import { analyzeCBC } from './utils/analyzeCBC';
+import { generateExplanation } from './utils/generateExplanation';
+import { getRecommendations } from './utils/getRecommendations';
 
 export default function App() {
   const [file, setFile] = useState(null);
   const [validationStatus, setValidationStatus] = useState('idle');
   const [validationData, setValidationData] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [loadingStep, setLoadingStep] = useState('');
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState(null);
 
@@ -35,38 +41,90 @@ export default function App() {
     setValidationStatus('validating');
 
     try {
-      const result = await validateCBCReport(selectedFile);
-      setValidationData(result);
-      setValidationStatus(result.isValid ? 'valid' : 'invalid');
-    } catch {
+      const ocrResult = await extractText(selectedFile, (msg) => {
+         // Could use this for progress updates if we expand UI state
+         console.log(msg);
+      });
+
+      if (!ocrResult.success) {
+         setValidationStatus('invalid');
+         setValidationData({ error: ocrResult.error });
+         return;
+      }
+
+      const vData = validateCBC(ocrResult.text);
+      setValidationData(vData);
+      setValidationStatus(vData.isValid ? 'valid' : 'invalid');
+      
+    } catch (e) {
       setValidationStatus('invalid');
+      setValidationData({ error: 'An unexpected error occurred during validation' });
     }
   }, []);
 
-  const handleAnalyze = useCallback(async () => {
+  const handleAnalyze = async () => {
     if (!file || validationStatus !== 'valid') return;
 
     setIsAnalyzing(true);
     setResults(null);
     setProgress(0);
-
-    // Simulate progress
-    let p = 0;
-    progressInterval.current = setInterval(() => {
-      p += Math.random() * 8 + 2;
-      if (p > 95) p = 95;
-      setProgress(p);
-    }, 200);
+    setLoadingStep('Extracting text...');
 
     try {
-      const data = await analyzeReport();
-      clearInterval(progressInterval.current);
+      // 1. Text Extraction
+      const ocrResult = await extractText(file, (msg) => {
+         // Optionally update step message based on OCR progress
+         if (msg.includes('%')) {
+             setProgress(parseInt(msg.match(/\d+/)[0]));
+         }
+      });
+
+      if (!ocrResult.success) {
+         throw new Error(ocrResult.error);
+      }
+      
+      setProgress(40);
+      setLoadingStep('Parsing report...');
+      // simulated small delay to show state
+      await new Promise(r => setTimeout(r, 600));
+
+      // 2. Parsed Data
+      const parsedData = parseCBC(ocrResult.text);
+      
+      setProgress(60);
+      setLoadingStep('Analyzing values...');
+      await new Promise(r => setTimeout(r, 600));
+
+      // 3. Analysis (Ranges, Status, Severity)
+      const analysis = analyzeCBC(parsedData);
+      
+      if (analysis.error) {
+         throw new Error(analysis.error);
+      }
+
+      setProgress(80);
+      setLoadingStep('Generating insights...');
+      await new Promise(r => setTimeout(r, 600));
+
+      // 4. Rule-based Explanations
+      const explanation = generateExplanation(parsedData, analysis);
+      
+      // 5. Recommendations
+      const recommendations = getRecommendations(analysis);
+
       setProgress(100);
+      await new Promise(r => setTimeout(r, 400)); // Let the 100% animate
 
-      // Small delay so the 100% is visible
-      await new Promise((r) => setTimeout(r, 400));
-
-      setResults(data);
+      // Format to match UI expectations
+      setResults({
+        parameters: analysis.parameters,
+        overallRisk: analysis.risk,
+        abnormalCount: analysis.abnormalCount,
+        criticalCount: analysis.criticalCount,
+        aiExplanation: explanation,
+        recommendations: recommendations,
+        emergencyAlert: analysis.risk === 'HIGH'
+      });
       setIsAnalyzing(false);
 
       // Scroll to results
@@ -76,17 +134,13 @@ export default function App() {
           block: 'start',
         });
       }, 200);
-    } catch {
-      clearInterval(progressInterval.current);
+
+    } catch (err) {
+      console.error(err);
+      alert(`Analysis failed: ${err.message}`);
       setIsAnalyzing(false);
     }
-  }, [file, validationStatus]);
-
-  useEffect(() => {
-    return () => {
-      if (progressInterval.current) clearInterval(progressInterval.current);
-    };
-  }, []);
+  };
 
   const canAnalyze = validationStatus === 'valid' && !isAnalyzing;
 
@@ -128,12 +182,9 @@ export default function App() {
             />
             <ValidationMessage
               status={validationStatus}
-              confidence={
-                validationData
-                  ? Math.round(validationData.confidence * 100)
-                  : 0
-              }
-              keywords={validationData?.detectedKeywords}
+              confidence={validationData?.confidence || 0}
+              keywords={validationData?.detectedKeywords || []}
+              error={validationData?.error}
             />
           </div>
 
@@ -146,7 +197,7 @@ export default function App() {
 
           {/* Loading State */}
           <AnimatePresence mode="wait">
-            {isAnalyzing && <LoadingState progress={progress} />}
+            {isAnalyzing && <LoadingState progress={progress} stepMsg={loadingStep} />}
           </AnimatePresence>
 
           {/* Results */}

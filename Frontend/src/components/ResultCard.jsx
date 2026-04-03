@@ -8,9 +8,11 @@ import {
   TrendingUp,
   TrendingDown,
   Activity,
+  Download,
 } from 'lucide-react';
 import ParameterTable from './ParameterTable';
 import EmergencyAlert from './EmergencyAlert';
+import { downloadReportPDF } from '../utils/generatePDF';
 
 function TriageBadge({ risk }) {
   const config = {
@@ -126,6 +128,17 @@ export default function ResultCard({ results }) {
             value={criticalCount}
             color="text-triage-red"
           />
+        </div>
+        
+        {/* Download Button */}
+        <div className="mt-8 flex justify-center">
+           <button
+             onClick={() => downloadReportPDF(results)}
+             className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-all shadow-lg"
+           >
+             <Download className="w-5 h-5" />
+             Download PDF Report
+           </button>
         </div>
       </div>
 

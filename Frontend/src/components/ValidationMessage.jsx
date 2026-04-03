@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, Loader2, Search } from 'lucide-react';
 
-export default function ValidationMessage({ status, confidence, keywords }) {
+export default function ValidationMessage({ status, confidence, keywords, error }) {
   // status: 'idle' | 'validating' | 'valid' | 'invalid'
 
   const content = {
@@ -45,10 +45,14 @@ export default function ValidationMessage({ status, confidence, keywords }) {
       >
         <div className="mt-0.5">{c.icon}</div>
         <div className="flex-1">
-          <p className={`font-semibold text-sm ${c.textColor}`}>{c.title}</p>
-          <p className="text-text-muted text-xs mt-1">{c.subtitle}</p>
+          <p className={`font-semibold text-sm ${c.textColor}`}>
+            {status === 'invalid' && error ? error : c.title}
+          </p>
+          <p className="text-text-muted text-xs mt-1">
+             {status === 'invalid' && error ? 'Please try another file' : c.subtitle}
+          </p>
 
-          {status === 'valid' && keywords && keywords.length > 0 && (
+          {status === 'valid' && keywords && Array.isArray(keywords) && keywords.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {keywords.map((kw) => (
                 <span
