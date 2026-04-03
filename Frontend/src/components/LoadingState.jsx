@@ -7,10 +7,11 @@ const steps = [
   { icon: Brain, label: 'Generating AI triage assessment...' },
 ];
 
-export default function LoadingState({ progress }) {
-  // progress: 0-100
-  const activeStep =
-    progress < 33 ? 0 : progress < 66 ? 1 : 2;
+export default function LoadingState({ progress, stepMsg }) {
+  // mapping step messages to roughly line up with overall progress layout
+  let activeStep = 0;
+  if (progress > 30) activeStep = 1;
+  if (progress > 60) activeStep = 2;
 
   return (
     <motion.div
@@ -32,10 +33,10 @@ export default function LoadingState({ progress }) {
       </div>
 
       <h3 className="text-xl font-bold text-white mb-2">
-        Analyzing Your Report
+        {stepMsg || 'Analyzing Your Report'}
       </h3>
       <p className="text-text-muted text-sm mb-8">
-        Our AI engine is processing your CBC data
+        Please wait while we process the medical data
       </p>
 
       {/* Steps */}
